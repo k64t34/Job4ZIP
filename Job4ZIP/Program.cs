@@ -17,7 +17,10 @@ namespace Job4ZIP
 	partial class Program
 	{
 		static int DowncountInterval=10;//sec
-		static XDocument XmlDoc;		
+		static XDocument XmlDoc;
+		static String ArcPath;ProgramFiles(x86)=C:\Program Files (x86)
+ProgramW6432=C:\Program Files
+		static String ArcEXE="7z.exe";
 		public static void Main(string[] args)
 		{
 			DateTime StartTime;
@@ -76,13 +79,16 @@ namespace Job4ZIP
 			if (XmlDoc.Element("PLAN")==null)
 				ShowError_Exit("Root Tag PLAN not found in config file",30);
 			
+			if (XmlDoc.Element("PLAN").Element("ARH")==null)
+				ShowError_Exit("Tag ARH not found in config file",32);
+			
 			if (XmlDoc.Element("PLAN").Element("JOBs")==null)
 				ShowError_Exit("Tag JOBs not found in config file",31);
 			
 			XElement JOBs = XmlDoc.Element("PLAN").Element("JOBs");
 			foreach ( XElement job in JOBs.Elements("JOB"))
 			{
-				doJob(job);//Console.WriteLine(job);
+				doJob(job);
 			}
 				
 			//Console.ResetColor();Console.ForegroundColor = ConsoleColor.White;
@@ -92,6 +98,7 @@ namespace Job4ZIP
 			Console.WriteLine("Finish time\t{0}",FinishTime);	
 			//SpendTime=FinishTime-StartTime;
 			Console.WriteLine("Spend time\t{0} sec",(FinishTime - StartTime).Seconds);
+			в хуман форме
 			FinishDownCount();
 			
 		}
