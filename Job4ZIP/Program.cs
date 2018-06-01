@@ -18,14 +18,13 @@ namespace Job4ZIP
 	{
 		static int DowncountInterval=10;//sec
 		static XDocument XmlDoc;
-		static String ArcPath;ProgramFiles(x86)=C:\Program Files (x86)
-ProgramW6432=C:\Program Files
+		static String ArcPath=Environment.GetEnvironmentVariable("ProgramFiles");
 		static String ArcEXE="7z.exe";
 		public static void Main(string[] args)
 		{
 			DateTime StartTime;
 			DateTime FinishTime;	
-			DateTime SpendTime;	
+			TimeSpan  SpendTime;	
 			
 			String xmlFile;			
 			StartTime= DateTime.Now;
@@ -92,13 +91,17 @@ ProgramW6432=C:\Program Files
 			}
 				
 			//Console.ResetColor();Console.ForegroundColor = ConsoleColor.White;
-			
+			 
 			Console.WriteLine("Start time\t{0}",StartTime);			
 			FinishTime= DateTime.Now;
-			Console.WriteLine("Finish time\t{0}",FinishTime);	
-			//SpendTime=FinishTime-StartTime;
-			Console.WriteLine("Spend time\t{0} sec",(FinishTime - StartTime).Seconds);
-			в хуман форме
+			//FinishTime=FinishTime.AddMinutes (1.0);
+			FinishTime=FinishTime.AddSeconds(11.0);
+			Console.WriteLine("Finish time\t{0}",FinishTime);
+			
+			SpendTime=FinishTime-StartTime;
+			Console.WriteLine(String.Format("{0}",SpendTime.TotalDays));
+			Console.WriteLine("Spend time\t{0} sec",SpendTime.ToString( ));
+			//в хуман форме
 			FinishDownCount();
 			
 		}
