@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<PLAN>
+	<JOBs name="Job4ZIP">
+		<JOB id = "Б" name="Бухгалтерия"></JOB>
+		<JOB id = "З" name="Зарплата"></JOB>
+			<TargetPath>d:\mybackup</TargetPath>	
+			<TargetFile>PRO</TargetFile>	
+			<TargetFileSuffix>"dd.MM.yyyy_HH-mm"</TargetFileSuffix>
+			<ArcCount>1</ArcCount>
+			<SourcePath>c:\pro</SourcePath>
+			<SourcePath>c:\pro</SourcePath>
+			<IncludeFile>*</IncludeFile>
+			<ExcludeFile>datetimecomp.inc;*.bak;*.err;*.smx;nppBackup;*.sq?;*.db;*.rar;*.zip;*.7z*;\db\</ExcludeFile>
+			<ExcludeFile>datetimecomp.inc;*.bak;*.err;*.smx;nppBackup;*.sq?;*.db;*.rar;*.zip;*.7z*;\db\</ExcludeFile>
+		<JOB id = "С" name="СБИС"></JOB>
+	</JOBs>
+	<ARH>
+		<ArcPath>C:\Program Files\7-Zip\</ArcPath>
+	</ARH>
+</PLAN>
