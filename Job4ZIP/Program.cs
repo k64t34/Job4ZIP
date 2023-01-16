@@ -1,12 +1,4 @@
-﻿/*
- * Created by SharpDevelop.
- * User: skorik
- * Date: 31.05.2018
- * Time: 11:29
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-using System;
+﻿using System;
 using System.Threading;
 using System.IO;
 using System.Xml;
@@ -34,7 +26,7 @@ namespace Job4ZIP
 			Console.Clear();
 			Console.Title=" Job for 7-Zip";
 			Console.WriteLine("-------------------------------------------------------");
-			Console.WriteLine("{0}                           {1}",Console.Title,"by Skorik 2018");
+			Console.WriteLine("{0}                           {1}",Console.Title,"by Skorik 2023");
 			Console.WriteLine("-------------------------------------------------------");
 			Console.WriteLine("Start time\t{0}",StartTime);
 			//
@@ -52,11 +44,8 @@ namespace Job4ZIP
 			{
 				ShowError_Exit(String.Format("ERR: Config File \"{0}\" not exist",xmlFile),1);	
 			}
-			// 
-            //Parsing config file
-            //
-            
-            XmlDoc=new XDocument();
+            #region Parsing config file
+            XmlDoc = new XDocument();
 			try
 			{
 				XmlDoc = XDocument.Load(xmlFile);
@@ -69,9 +58,9 @@ namespace Job4ZIP
         		Console.WriteLine(ex.Message);
         		ShowError_Exit("",2);	        	 
 			}
-			
-			
-			Console.ForegroundColor = ConsoleColor.DarkGray;
+            #endregion
+
+            Console.ForegroundColor = ConsoleColor.DarkGray;
 			Console.WriteLine(XmlDoc);
 			Console.ResetColor();
 			

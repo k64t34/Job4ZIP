@@ -1,3 +1,4 @@
 *.bak
 /Job4ZIP/bin/*
 /Job4ZIP/obj/*
+/Job4ZIP/.vs/* 
