@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?> 
+<PLAN name ="1C">   
+   <SourcePath>Test\Source</SourcePath> 
+   <IncludeFile>*</IncludeFile>
+   <ExcludeFile>*.bak;</ExcludeFile>   
+   <TargetPath>Test\Target</TargetPath>    
+   <TargetFile>1C</TargetFile>
+   <DateFrom>20230121</DateFrom>
+   <DateTo>20330101</DateTo>
+   <DateLastCorrectState>20230101</DateLastCorrectState>
+<Timetable>   
+	<Schedule id="Y1" type = "y" count="0">
+      <Period>ddd1</Period>
+   </Schedule>     
+</Timetable>   
+<ARH>    
+   <ArcPath>C:\Program Files\7-Zip\</ArcPath>   
+   <ArcName>7z.exe</ArcName>   
+</ARH>   
+</PLAN>

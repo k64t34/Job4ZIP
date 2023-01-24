@@ -89,11 +89,18 @@ namespace Job4ZIP
             #region Parsing arguments command line            
             Console.ForegroundColor = ConsoleColor.DarkGray;
 			xmlFile =AppDomain.CurrentDomain.BaseDirectory;
+			#if DEBUG
+			xmlFile = AppDomain.CurrentDomain.BaseDirectory;
+			xmlFile = System.IO.Directory.GetParent(xmlFile).ToString();
+			xmlFile = System.IO.Directory.GetParent(xmlFile).ToString();
+			xmlFile = System.IO.Directory.GetParent(xmlFile).ToString();			
+			xmlFile = System.IO.Directory.GetParent(xmlFile).ToString()+ @"\test\1C.xml";
+#else
 			if (args.Length==0) 
 				xmlFile+="job4zip.xml";
 			else				 
 				xmlFile+=args[0];
-			
+#endif
 			//Console.WriteLine("Config file is {0}",xmlFile);
 			ConsoleWriteField("Config file is ", xmlFile);
 			#endregion
@@ -113,7 +120,7 @@ namespace Job4ZIP
 			}
 			Console.WriteLine();
 
-			#region Parsing config file
+#region Parsing config file
 			XmlDoc = new XDocument();
 			try
 			{
@@ -127,7 +134,7 @@ namespace Job4ZIP
         		Console.WriteLine(ex.Message);
         		ShowError_Exit("",2);	        	 
 			}
-            #endregion
+#endregion
 
             Console.ForegroundColor = ConsoleColor.DarkGray;
 			Console.WriteLine(XmlDoc);
@@ -203,5 +210,7 @@ namespace Job4ZIP
 			Console.Write(Value + "\t");
 			if (CR) Console.WriteLine();
 		}
+		public static string ParentFolder(string Folder){return System.IO.Directory.GetParent(Folder.TrimEnd(new char[] { '\\' })).ToString() + "\\";}
+
 	}
 }
