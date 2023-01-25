@@ -16,6 +16,7 @@ using System.Collections;
 using System.Windows;
 using System.Windows.Forms;
 
+
 namespace Job4ZIP
 {
 	partial class Program
@@ -53,8 +54,17 @@ namespace Job4ZIP
 		static XDocument XmlDoc;
 		static String ArcPath=Environment.GetEnvironmentVariable("ProgramFiles");
 		static String ArcEXE="7z.exe";
+		static String FolderLog;
 		public static void Main(string[] args)
 		{
+#if DEBUG
+			FolderLog = AppDomain.CurrentDomain.BaseDirectory;
+#else
+            FolderLog = GetEnvironmentVariable("USERPROFILE")+"\\Documents";			
+#endif
+			FolderLog += "\\job4zip.log";
+			WriteLog("------------------------------------------");
+			WriteLog(String.Format("Start time\t{0}", DateTime.Now));
 			#region Set console windows size
 			IntPtr ConsoleHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
 			const UInt32 WINDOW_FLAGS = SWP_SHOWWINDOW;
@@ -72,8 +82,7 @@ namespace Job4ZIP
 			#endregion
 			DateTime StartTime;
 			DateTime FinishTime;	
-			TimeSpan SpendTime;	
-			
+			TimeSpan SpendTime;			
 			String xmlFile;			
 			StartTime= DateTime.Now;
 			Console_ResetColor();
@@ -85,17 +94,18 @@ namespace Job4ZIP
 			Console.WriteLine(Console.Title);
 			Console.WriteLine("-------------------------------------------------------");
 			Console.ForegroundColor = ConsoleColor.White;
-			Console.WriteLine("Start time\t{0}",StartTime);            
-            #region Parsing arguments command line            
-            Console.ForegroundColor = ConsoleColor.DarkGray;
+			Console.WriteLine("Start time\t{0}",StartTime);
+			
+			#region Parsing arguments command line            
+			Console.ForegroundColor = ConsoleColor.DarkGray;
 			xmlFile =AppDomain.CurrentDomain.BaseDirectory;
-			#if DEBUG
-			xmlFile = AppDomain.CurrentDomain.BaseDirectory;
+#if DEBUG			
 			xmlFile = System.IO.Directory.GetParent(xmlFile).ToString();
 			xmlFile = System.IO.Directory.GetParent(xmlFile).ToString();
 			xmlFile = System.IO.Directory.GetParent(xmlFile).ToString();			
 			xmlFile = System.IO.Directory.GetParent(xmlFile).ToString()+ @"\test\1C.xml";
 #else
+            
 			if (args.Length==0) 
 				xmlFile+="job4zip.xml";
 			else				 
@@ -103,15 +113,18 @@ namespace Job4ZIP
 #endif
 			//Console.WriteLine("Config file is {0}",xmlFile);
 			ConsoleWriteField("Config file is ", xmlFile);
+			WriteLog(String.Format("Config file is\t{0}", xmlFile));
 			#endregion
 			if (!File.Exists(xmlFile))
 			{
+				WriteLog(String.Format("ERR: Config File \"{0}\" not exist", xmlFile));
 				ShowError_Exit(String.Format("ERR: Config File \"{0}\" not exist",xmlFile),1);
 			}
 			Console.SetCursorPosition(0, Console.CursorTop - 1);
 			int xmlFileStringNameLenght = xmlFile.Length;
 			xmlFile = Path.GetFullPath(xmlFile);
 			ConsoleWriteField("Config file is ", Path.GetFullPath(xmlFile),false);
+			WriteLog(String.Format("Config file is\t{0}", Path.GetFullPath(xmlFile)));
 			if (xmlFile.Length < xmlFileStringNameLenght) 
 				{
 				string str1 = ""; 
@@ -119,8 +132,9 @@ namespace Job4ZIP
 				Console.Write(str1);
 			}
 			Console.WriteLine();
+			ConsoleWriteField("Write log to ",FolderLog);
 
-#region Parsing config file
+			#region Parsing config file
 			XmlDoc = new XDocument();
 			try
 			{
@@ -130,9 +144,12 @@ namespace Job4ZIP
 			{							
         		Console.ForegroundColor = ConsoleColor.DarkRed;
         		Console.WriteLine("ERR: Config File \"{0}\" not parsing.",xmlFile);
-        		Console.ForegroundColor = ConsoleColor.DarkYellow;
+				WriteLog(String.Format("ERR: Config File \"{0}\" not parsing.", xmlFile));
+
+				Console.ForegroundColor = ConsoleColor.DarkYellow;
         		Console.WriteLine(ex.Message);
-        		ShowError_Exit("",2);	        	 
+				WriteLog(ex.Message);
+				ShowError_Exit("",2);	        	 
 			}
 #endregion
 
@@ -211,6 +228,17 @@ namespace Job4ZIP
 			if (CR) Console.WriteLine();
 		}
 		public static string ParentFolder(string Folder){return System.IO.Directory.GetParent(Folder.TrimEnd(new char[] { '\\' })).ToString() + "\\";}
+	
+		public static  void WriteLog(String str)
+		{
+			using (StreamWriter writer = new StreamWriter(FolderLog, true))
+			{				
+				 writer.WriteLine(str);
+				//await writer.WriteAsync("4,5");
+			}
+
+
+		}
 
 	}
 }
