@@ -62,8 +62,8 @@ namespace Job4ZIP
 #else
             FolderLog = GetEnvironmentVariable("USERPROFILE")+"\\Documents";			
 #endif
-			FolderLog += "\\job4zip.log";
-			WriteLineLog("------------------------------------------");
+			FolderLog += "job4zip.log";			
+			WriteLineLog("\n------------------------------------------");
 			WriteLineLog(String.Format("Start time\t{0}", DateTime.Now));
 			#region Set console windows size
 			IntPtr ConsoleHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
@@ -110,20 +110,17 @@ namespace Job4ZIP
 				xmlFile+="job4zip.xml";
 			else				 
 				xmlFile+=args[0];
-#endif
-			//Console.WriteLine("Config file is {0}",xmlFile);
-			ConsoleWriteField("Config file is ", xmlFile);			
+#endif			
+			ConsoleWriteLineField("Config file is ", xmlFile);			
 			#endregion
 			if (!File.Exists(xmlFile))
-			{
-				WriteLog(String.Format("ERR: Config File \"{0}\" not exist", xmlFile));
+			{				
 				ShowError_Exit(String.Format("ERR: Config File \"{0}\" not exist", xmlFile), 1);
 			}
 			Console.SetCursorPosition(0, Console.CursorTop - 1);
 			int xmlFileStringNameLenght = xmlFile.Length;
 			xmlFile = Path.GetFullPath(xmlFile);
-			ConsoleWriteField("Config file is ", Path.GetFullPath(xmlFile), false);
-			WriteLog(String.Format("Config file is\t{0}", Path.GetFullPath(xmlFile)));
+			ConsoleWriteField("Config file is ", Path.GetFullPath(xmlFile), false);			
 			if (xmlFile.Length < xmlFileStringNameLenght)
 			{
 				string str1 = "";
@@ -131,7 +128,10 @@ namespace Job4ZIP
 				Console.Write(str1);
 			}
 			Console.WriteLine();
-			ConsoleWriteField("Write log to ", FolderLog);
+			ConsoleWriteLineField("Write log to ", FolderLog);
+			Plan plan=new Plan(xmlFile);
+
+
 
 			#region Parsing config file
 			XmlDoc = new XDocument();
@@ -141,13 +141,11 @@ namespace Job4ZIP
 			}
 			catch (Exception ex)
 			{
-				Console.ForegroundColor = ConsoleColor.DarkRed;
-				Console.WriteLine("ERR: Config File \"{0}\" not parsing.", xmlFile);
-				WriteLog(String.Format("ERR: Config File \"{0}\" not parsing.", xmlFile));
+				Console.ForegroundColor = ConsoleColor.DarkRed;								
+				Console_WriteLine(String.Format("ERR: Config File \"{0}\" not parsing.", xmlFile));
 
 				Console.ForegroundColor = ConsoleColor.DarkYellow;
-				Console.WriteLine(ex.Message);
-				WriteLog(ex.Message);
+				Console_WriteLine(ex.Message);				
 				ShowError_Exit("", 2);
 			}
 			#endregion
@@ -162,13 +160,13 @@ namespace Job4ZIP
 			if (XmlDoc.Element("PLAN").Element("ARH") == null)
 				ShowError_Exit("Tag ARH not found in config file", 32);
 
-			if (XmlDoc.Element("PLAN").Element("JOBs") == null)
-				ShowError_Exit("Tag JOBs not found in config file", 31);
+			if (XmlDoc.Element("PLAN").Element("Timetable") == null)
+				ShowError_Exit("Tag Timetable not found in config file", 31);
 
-			XElement JOBs = XmlDoc.Element("PLAN").Element("JOBs");
-			foreach (XElement job in JOBs.Elements("JOB"))
+			XElement Timetable = XmlDoc.Element("PLAN").Element("Timetable");
+			foreach (XElement Schedule in Timetable.Elements("Schedule"))
 			{
-				doJob(job);
+				doSchedule(Schedule);
 			}
 
 			//Console.ResetColor();Console.ForegroundColor = ConsoleColor.White;
@@ -177,11 +175,10 @@ namespace Job4ZIP
 			FinishTime = DateTime.Now;
 			//FinishTime=FinishTime.AddMinutes (1.0);
 			FinishTime = FinishTime.AddSeconds(11.0);
-			Console.WriteLine("Finish time\t{0}", FinishTime);
-
+			Console_WriteLine(String.Format("Finish time\t{0}", FinishTime));
 			SpendTime = FinishTime - StartTime;
-			Console.WriteLine(String.Format("{0}", SpendTime.TotalDays));
-			Console.WriteLine("Spend time\t{0} sec", SpendTime.ToString());
+			Console_WriteLine(String.Format("{0}", SpendTime.TotalDays));
+			Console_WriteLine(String.Format("Spend time\t{0} sec", SpendTime.ToString()));
 			//в хуман форме
 			FinishDownCount();
 
@@ -205,7 +202,7 @@ namespace Job4ZIP
 		static void ShowError_Exit(String Message, int ExitCode = 1) {
 			//*********************************	
 			Console.ForegroundColor = ConsoleColor.DarkRed;
-			Console.WriteLine(Message);
+			Console_WriteLine(Message);
 			Console_ResetColor();
 			FinishDownCount();
 			Environment.ExitCode = ExitCode;
@@ -218,25 +215,39 @@ namespace Job4ZIP
 		const ConsoleColor FGcolorFieldValue = ConsoleColor.White;
 		public static void Console_ResetColor() { Console.BackgroundColor = BGcolor; Console.ForegroundColor = FGcolor; }
 		public static void Console_SetH1Color() { Console.BackgroundColor = BGcolor; Console.ForegroundColor = FGcolorH1; }
-		public void Console_WriteLine(string str, bool WriteToLogToo=true)
+		public static void Console_WriteLine(string str, bool WriteToLogToo=true)
+
 		{
 			Console.WriteLine(str);
-			if (WriteToLogToo) WriteLog(str);
+			if (WriteToLogToo) WriteLineLog(str);
 		}
-		public void Console_Write(string str, bool WriteToLogToo)
+		public static void Console_Write(string str, bool WriteToLogToo)
 		{
 			Console.Write(str);
 			if (WriteToLogToo) WriteLog(str);
 		}
 
-		public static void ConsoleWriteField(string Name, string Value, bool CR = true,bool WriteToLogToo=true)
+		public static void ConsoleWriteField(string Name, string Value, bool WriteToLogToo=true)
 		{
 			Console.ForegroundColor = FGcolorFieldName;
 			Console.Write(Name + "\t");
 			Console.ForegroundColor = FGcolorFieldValue;
-			Console.Write(Value + "\t");
-			if (CR) Console.WriteLine();
-			if (WriteToLogToo) WriteToLogToo //Сперва доделать здесь
+			Console.Write(Value);
+			if (WriteToLogToo) 
+				{
+				WriteLog(Name + "\t" + Value);
+				}
+		}
+		public static void ConsoleWriteLineField(string Name, string Value, bool WriteToLogToo = true)
+		{
+			Console.ForegroundColor = FGcolorFieldName;
+			Console.Write(Name + "\t");
+			Console.ForegroundColor = FGcolorFieldValue;
+			Console.WriteLine(Value);
+			if (WriteToLogToo)
+			{
+				WriteLineLog(Name + "\t" + Value);
+			}
 		}
 		public static string ParentFolder(string Folder){return System.IO.Directory.GetParent(Folder.TrimEnd(new char[] { '\\' })).ToString() + "\\";}
 	
