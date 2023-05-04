@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?> 
 <PLAN name ="1C">   
-   <SourcePath>Test\Source</SourcePath> 
+   <SourcePath>Source</SourcePath> 
    <IncludeFile>*</IncludeFile>
    <ExcludeFile>*.bak;</ExcludeFile>   
-   <TargetPath>Test\Target</TargetPath>    
+   <TargetPath>Target</TargetPath>    
    <TargetFile>1C</TargetFile>
    <DateFrom>20230121</DateFrom>
    <DateTo>20330101</DateTo>

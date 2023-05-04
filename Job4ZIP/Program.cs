@@ -55,6 +55,7 @@ namespace Job4ZIP
 		static String ArcPath = Environment.GetEnvironmentVariable("ProgramFiles");
 		static String ArcEXE = "7z.exe";
 		static String FolderLog;
+		static string SourcePath;
 		public static void Main(string[] args)
 		{
 #if DEBUG
@@ -152,31 +153,37 @@ namespace Job4ZIP
 
 			Console.ForegroundColor = ConsoleColor.DarkGray;
 			Console.WriteLine(XmlDoc);
-			Console.ResetColor();
+			Console_ResetColor();
 
 			if (XmlDoc.Element("PLAN") == null)
 				ShowError_Exit("Root Tag PLAN not found in config file", 30);
-
+			//if (XmlDoc.Element("PLAN").Element("Timetable") == null)
+			//	ShowError_Exit("Tag Timetable not found in config file", 31);
 			if (XmlDoc.Element("PLAN").Element("ARH") == null)
 				ShowError_Exit("Tag ARH not found in config file", 32);
+			if (XmlDoc.Element("PLAN").Element("SourcePath") == null)
+				ShowError_Exit("Tag SourcePath not found in config file", 33);	
 
-			if (XmlDoc.Element("PLAN").Element("Timetable") == null)
-				ShowError_Exit("Tag Timetable not found in config file", 31);
+			//XElement Timetable = XmlDoc.Element("PLAN").Element("Timetable");
+			//foreach (XElement Schedule in Timetable.Elements("Schedule"))
+			//{
+			//	doSchedule(Schedule);
+			//}
 
-			XElement Timetable = XmlDoc.Element("PLAN").Element("Timetable");
-			foreach (XElement Schedule in Timetable.Elements("Schedule"))
-			{
-				doSchedule(Schedule);
-			}
 			if (XmlDoc.Element("PLAN").HasAttributes)
 			{//				foreach (XAttribute att in XmlDoc.Element("PLAN").Attributes()) 					Console.WriteLine("{0}={1}", att.Name, att.Value);
 				if (XmlDoc.Element("PLAN").Attribute("name") != null)
-
-					ConsoleWriteLineField("Plan", "\"" + XmlDoc.Element("PLAN").Attribute("name").Value + "\"");
+					ConsoleWriteLineField("Plan", "\"" + XmlDoc.Element("PLAN").Attribute("name").Value + "\"",true);
 			}
+			SourcePath = XmlDoc.Element("PLAN").Element("SourcePath").Value;
+            #if DEBUG
+			SourcePath = Path.GetDirectoryName(xmlFile) + "\\"+SourcePath; 
+			#endif
+			ConsoleWriteLineField("SourcePath", SourcePath, true);
+			if (!Directory.Exists(SourcePath)) ShowError_Exit("SourcePath \""+SourcePath+"\" not exist", 34);
 
 
-			//Console.ResetColor();Console.ForegroundColor = ConsoleColor.White;
+			Console.ResetColor();Console.ForegroundColor = ConsoleColor.White;
 
 			Console.WriteLine("Start time\t{0}", StartTime);
 			FinishTime = DateTime.Now;
