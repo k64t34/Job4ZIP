@@ -62,7 +62,7 @@ namespace Job4ZIP
 #else
             FolderLog = GetEnvironmentVariable("USERPROFILE")+"\\Documents";			
 #endif
-			FolderLog += "job4zip.log";			
+			FolderLog += "job4zip.log";
 			WriteLineLog("\n------------------------------------------");
 			WriteLineLog(String.Format("Start time\t{0}", DateTime.Now));
 			#region Set console windows size
@@ -110,17 +110,17 @@ namespace Job4ZIP
 				xmlFile+="job4zip.xml";
 			else				 
 				xmlFile+=args[0];
-#endif			
-			ConsoleWriteLineField("Config file is ", xmlFile);			
+#endif
+			ConsoleWriteLineField("Config file is ", xmlFile);
 			#endregion
 			if (!File.Exists(xmlFile))
-			{				
+			{
 				ShowError_Exit(String.Format("ERR: Config File \"{0}\" not exist", xmlFile), 1);
 			}
 			Console.SetCursorPosition(0, Console.CursorTop - 1);
 			int xmlFileStringNameLenght = xmlFile.Length;
 			xmlFile = Path.GetFullPath(xmlFile);
-			ConsoleWriteField("Config file is ", Path.GetFullPath(xmlFile), false);			
+			ConsoleWriteField("Config file is ", Path.GetFullPath(xmlFile), false);
 			if (xmlFile.Length < xmlFileStringNameLenght)
 			{
 				string str1 = "";
@@ -129,7 +129,7 @@ namespace Job4ZIP
 			}
 			Console.WriteLine();
 			ConsoleWriteLineField("Write log to ", FolderLog);
-			Plan plan=new Plan(xmlFile);
+			Plan plan = new Plan(xmlFile);
 
 
 
@@ -141,11 +141,11 @@ namespace Job4ZIP
 			}
 			catch (Exception ex)
 			{
-				Console.ForegroundColor = ConsoleColor.DarkRed;								
+				Console.ForegroundColor = ConsoleColor.DarkRed;
 				Console_WriteLine(String.Format("ERR: Config File \"{0}\" not parsing.", xmlFile));
 
 				Console.ForegroundColor = ConsoleColor.DarkYellow;
-				Console_WriteLine(ex.Message);				
+				Console_WriteLine(ex.Message);
 				ShowError_Exit("", 2);
 			}
 			#endregion
@@ -168,6 +168,13 @@ namespace Job4ZIP
 			{
 				doSchedule(Schedule);
 			}
+			if (XmlDoc.Element("PLAN").HasAttributes)
+			{//				foreach (XAttribute att in XmlDoc.Element("PLAN").Attributes()) 					Console.WriteLine("{0}={1}", att.Name, att.Value);
+				if (XmlDoc.Element("PLAN").Attribute("name") != null)
+
+					ConsoleWriteLineField("Plan", "\"" + XmlDoc.Element("PLAN").Attribute("name").Value + "\"");
+			}
+
 
 			//Console.ResetColor();Console.ForegroundColor = ConsoleColor.White;
 
