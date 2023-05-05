@@ -15,5 +15,6 @@
 </Timetable>   
 <ZIP>    
    <EXE>C:\Program Files\WinRAR\rar.exe</EXE>
+   <BASE_PARAMETERS>u -r -mx9</BASE_PARAMETERS>
 </ZIP>   
 </PLAN>

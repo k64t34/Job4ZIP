@@ -15,7 +15,7 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using System.Windows;
 using System.Windows.Forms;
-
+using System.Text;
 
 namespace Job4ZIP
 {
@@ -52,11 +52,9 @@ namespace Job4ZIP
         #endregion
         #region Global Vars
         static int DowncountInterval = 10;//sec
-		static XDocument XmlDoc;
-		static String ArcPath = Environment.GetEnvironmentVariable("ProgramFiles");
-		static String ArcEXE = "7z.exe";
+		static XDocument XmlDoc;		
 		static String FolderLog;
-		static string SourcePath,TargetPath;
+		static string SourcePath,TargetPath, TargetFile, ZIP_EXE; 
 		#endregion
 		public static void Main(string[] args)
 		{
@@ -168,7 +166,10 @@ namespace Job4ZIP
 				ShowError_Exit("Tag SourcePath not found in config file", 33);
 			if (XmlDoc.Element("PLAN").Element("TargetPath") == null)
 				ShowError_Exit("Tag TargetPath not found in config file", 33);
-			if (XmlDoc.Element("PLAN").Element("ZIP").Element("EXE")== null)
+			if (XmlDoc.Element("PLAN").Element("TargetFile") == null)
+				ShowError_Exit("Tag TargetFile not found in config file", 33);
+			TargetFile = XmlDoc.Element("PLAN").Element("TargetFile").Value;
+				if (XmlDoc.Element("PLAN").Element("ZIP").Element("EXE")== null)
 				ShowError_Exit("Tag EXE in ZIP node not found in config file", 34);
 			//XElement Timetable = XmlDoc.Element("PLAN").Element("Timetable");
 			//foreach (XElement Schedule in Timetable.Elements("Schedule"))
@@ -201,24 +202,23 @@ namespace Job4ZIP
 			if (!Directory.Exists(TargetPath)) ShowError_Exit("TargetPath \"" + TargetPath + "\" not exist", 34);
 			#endregion
 			#region Check ZIP
-			string ZIP_EXE = XmlDoc.Element("PLAN").Element("ZIP").Element("EXE").Value;
+			ZIP_EXE = XmlDoc.Element("PLAN").Element("ZIP").Element("EXE").Value;
 			ConsoleWriteLineField("Zip", ZIP_EXE, true);
 			if (!File.Exists(ZIP_EXE)) ShowError_Exit("ZIP \"" + ZIP_EXE + "\" not exist", 34);
 			#endregion
-
-			Console.ResetColor();Console.ForegroundColor = ConsoleColor.White;
-
-			Console.WriteLine("Start time\t{0}", StartTime);
+			#region Start ZIP
+			Console.ResetColor(); Console.ForegroundColor = ConsoleColor.White;
+			ConsoleWriteLineField("Start time", StartTime.ToString(), true);			
+			ZIP();
 			FinishTime = DateTime.Now;
 			//FinishTime=FinishTime.AddMinutes (1.0);
 			FinishTime = FinishTime.AddSeconds(11.0);
-			Console_WriteLine(String.Format("Finish time\t{0}", FinishTime));
+			ConsoleWriteLineField("Finish time", FinishTime.ToString(), true);
 			SpendTime = FinishTime - StartTime;
 			Console_WriteLine(String.Format("{0}", SpendTime.TotalDays));
-			Console_WriteLine(String.Format("Spend time\t{0} sec", SpendTime.ToString()));
-			//в хуман форме
+			Console_WriteLine(String.Format("Spend time\t{0} sec", SpendTime.ToString()));//в хуман форме
+			#endregion
 			FinishDownCount();
-
 		}
 		//*********************************
 		static void FinishDownCount() {
@@ -258,7 +258,7 @@ namespace Job4ZIP
 			Console.WriteLine(str);
 			if (WriteToLogToo) WriteLineLog(str);
 		}
-		public static void Console_Write(string str, bool WriteToLogToo)
+		public static void Console_Write(string str, bool WriteToLogToo=true)
 		{
 			Console.Write(str);
 			if (WriteToLogToo) WriteLog(str);
@@ -303,6 +303,97 @@ namespace Job4ZIP
 				writer.WriteLine(str);
 				//await writer.WriteAsync("4,5");
 			}
+		}
+		private static  int RUN(string FileName, string Arguments)// TODO:Записывать все ошибки в журнал
+		{
+#if DEBUG
+			//this.textBox_Console.BeginInvoke(delegateConsoleWrite, FileName + " " + Arguments + Environment.NewLine);
+#endif
+			int RUN_return = 0;
+			try
+			{
+				using (Process myProcess = new Process())
+				{
+					myProcess.StartInfo.UseShellExecute = false;
+					myProcess.StartInfo.FileName = FileName;
+					myProcess.StartInfo.Arguments = Arguments;
+					//myProcess.StartInfo.UseShellExecute = false;
+					//myProcess.StartInfo.CreateNoWindow = true;
+					//myProcess.StartInfo.ErrorDialog = true;
+					myProcess.StartInfo.RedirectStandardOutput = true;
+					myProcess.StartInfo.RedirectStandardInput = true;
+					myProcess.StartInfo.RedirectStandardError = true;
+					StringBuilder so = new StringBuilder();
+					myProcess.OutputDataReceived += (sender, args) => { so.AppendLine(args.Data); };
+					myProcess.ErrorDataReceived += (sender, args) => { so.AppendLine(args.Data); };
+					myProcess.Start();
+					myProcess.BeginOutputReadLine();
+					myProcess.BeginErrorReadLine();
+					Random random = new Random();
+					int BufLine = 0;
+					while (!myProcess.HasExited)
+					{
+						Thread.Sleep(random.Next(100, 1000));
+						if (so.Length > BufLine)
+						{  
+							Console.Write(so.ToString().Substring(BufLine));//Console.Write(OEM866_to_Win1251(so.ToString().Substring(BufLine)));
+							WriteLineLog(so.ToString().Substring(BufLine));
+							BufLine = so.Length;
+						}
+					}
+					//if (so.Length > BufLine) this.textBox_Console.BeginInvoke(delegateConsoleWrite, so.ToString().Substring(BufLine));
+					RUN_return = myProcess.ExitCode;
+					myProcess.Dispose();
+				}
+			}
+			catch (Exception e)
+			{
+				{
+					RUN_return = -1;
+					Console.WriteLine(e.Message + Environment.NewLine);
+					WriteLineLog(e.Message);
+				}
+			}
+			return (RUN_return);
+		}
+		private static int ZIP()
+		{
+			int  result = 0;
+
+#if DEBUG
+			//this.textBox_Console.BeginInvoke(delegateConsoleWrite, "Begin unzip file " + Source + " to " + workFolder + Environment.NewLine);
+#endif
+			//this.textBox_Console.BeginInvoke(delegateConsoleWrite, "Распаковка " + Source + ".");
+			string Arguments = "U -r -ep1 -m5 -we:\\tmp -ilog"+FolderLog +" "+ TargetPath+"\\"+TargetFile+" "+SourcePath;
+			Console_WriteLine(String.Format("Exec {0} {1}", ZIP_EXE,Arguments), true);			
+			result = RUN(ZIP_EXE, Arguments);
+			string[] ReturnCodeText= {
+				"Операция успешно завершена",//0
+				"Предупреждение. Некритические ошибки",//1
+				"Критическая ошибка",//2
+				"Неверная контрольная сумма. Данные повреждены",//3
+				"Попытка изменить заблокированный архив",//4
+				"Ошибка записи на диск",//5
+				"Ошибка открытия файла",//6
+				"Неверный параметр в командной строке",//7
+				"Недостаточно памяти для выполнения операции",//8
+				"Ошибка при создании файла",//9
+				"Нет параметров и файлов, удовлетворяющих указанной маске",//10
+				"Неверный пароль",//11
+				"Ошибка чтения",//12
+				"Операция прервана пользователем",//255->13
+				"Неизвестный код возврата"//14
+			};
+			Console_Write(string.Format("ERRORLEVEL={0} ", result),true);			
+			if (result > 12) { if (result == 255) result = 13; else result = 14;}			
+			Console_WriteLine(ReturnCodeText[result], true);
+			return result;
+		}
+		public static string OEM866_to_Win1251(string line)
+		{
+			Encoding w1251 = Encoding.GetEncoding("Windows-1251");
+			Encoding cp866 = Encoding.GetEncoding("cp866");
+			return cp866.GetString(w1251.GetBytes(line));
 		}
 
 	}
