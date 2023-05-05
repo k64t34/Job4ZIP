@@ -364,7 +364,7 @@ namespace Job4ZIP
 			//this.textBox_Console.BeginInvoke(delegateConsoleWrite, "Begin unzip file " + Source + " to " + workFolder + Environment.NewLine);
 #endif
 			//this.textBox_Console.BeginInvoke(delegateConsoleWrite, "Распаковка " + Source + ".");
-			string Arguments = "U -r -ep1 -m5 -we:\\tmp -ilog"+FolderLog +" "+ TargetPath+"\\"+TargetFile+" "+SourcePath;
+			string Arguments = "U -r -ep1 -m5 -we:\\tmp -ilog"+FolderLog +" "+ TargetPath+"\\"+TargetFile+" "+SourcePath+"*.png";
 			Console_WriteLine(String.Format("Exec {0} {1}", ZIP_EXE,Arguments), true);			
 			result = RUN(ZIP_EXE, Arguments);
 			string[] ReturnCodeText= {

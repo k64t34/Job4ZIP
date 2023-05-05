@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?> 
 <PLAN name ="1C">   
    <SourcePath>Source</SourcePath> 
-   <IncludeFile>*</IncludeFile>
+   <IncludeFile>*.*</IncludeFile>
    <ExcludeFile>*.bak;</ExcludeFile>   
    <TargetPath>Target</TargetPath>    
    <TargetFile>1C</TargetFile>
