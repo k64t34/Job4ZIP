@@ -13,8 +13,7 @@
       <Period>ddd1</Period>
    </Schedule>     
 </Timetable>   
-<ARH>    
-   <ArcPath>C:\Program Files\7-Zip\</ArcPath>   
-   <ArcName>7z.exe</ArcName>   
-</ARH>   
+<ZIP>    
+   <EXE>C:\Program Files\WinRAR\rar.exe</EXE>
+</ZIP>   
 </PLAN>

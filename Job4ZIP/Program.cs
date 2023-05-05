@@ -49,20 +49,22 @@ namespace Job4ZIP
 		[DllImport("user32.dll")]// https://studassistent.ru/charp/centralnoe-polozhenie-okna-konsoli-c
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-		#endregion
-		static int DowncountInterval = 10;//sec
+        #endregion
+        #region Global Vars
+        static int DowncountInterval = 10;//sec
 		static XDocument XmlDoc;
 		static String ArcPath = Environment.GetEnvironmentVariable("ProgramFiles");
 		static String ArcEXE = "7z.exe";
 		static String FolderLog;
-		static string SourcePath;
+		static string SourcePath,TargetPath;
+		#endregion
 		public static void Main(string[] args)
 		{
-#if DEBUG
+			#if DEBUG
 			FolderLog = AppDomain.CurrentDomain.BaseDirectory;
-#else
+			#else
             FolderLog = GetEnvironmentVariable("USERPROFILE")+"\\Documents";			
-#endif
+			#endif
 			FolderLog += "job4zip.log";
 			WriteLineLog("\n------------------------------------------");
 			WriteLineLog(String.Format("Start time\t{0}", DateTime.Now));
@@ -86,7 +88,8 @@ namespace Job4ZIP
 			TimeSpan SpendTime;
 			String xmlFile;
 			StartTime = DateTime.Now;
-			Console_ResetColor();
+            #region Print Programm Title
+            Console_ResetColor();
 			Console.Clear();            //Console.BackgroundColor = ConsoleColor.Blue;						//Console.ForegroundColor = ConsoleColor.DarkBlue;	
 			Console.ForegroundColor = FGcolorH1;
 			Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -95,8 +98,8 @@ namespace Job4ZIP
 			Console.WriteLine(Console.Title);
 			Console.WriteLine("-------------------------------------------------------");
 			Console.ForegroundColor = ConsoleColor.White;
+			#endregion
 			Console.WriteLine("Start time\t{0}", StartTime);
-
 			#region Parsing arguments command line            
 			Console.ForegroundColor = ConsoleColor.DarkGray;
 			xmlFile = AppDomain.CurrentDomain.BaseDirectory;
@@ -113,8 +116,9 @@ namespace Job4ZIP
 				xmlFile+=args[0];
 #endif
 			ConsoleWriteLineField("Config file is ", xmlFile);
-			#endregion
-			if (!File.Exists(xmlFile))
+            #endregion
+            #region Check path to config file 
+            if (!File.Exists(xmlFile))
 			{
 				ShowError_Exit(String.Format("ERR: Config File \"{0}\" not exist", xmlFile), 1);
 			}
@@ -122,7 +126,9 @@ namespace Job4ZIP
 			int xmlFileStringNameLenght = xmlFile.Length;
 			xmlFile = Path.GetFullPath(xmlFile);
 			ConsoleWriteField("Config file is ", Path.GetFullPath(xmlFile), false);
-			if (xmlFile.Length < xmlFileStringNameLenght)
+            #endregion
+            #region Print config file 
+            if (xmlFile.Length < xmlFileStringNameLenght)
 			{
 				string str1 = "";
 				for (int i = xmlFile.Length; i != xmlFileStringNameLenght; i++) str1 = str1 + " ";
@@ -130,11 +136,9 @@ namespace Job4ZIP
 			}
 			Console.WriteLine();
 			ConsoleWriteLineField("Write log to ", FolderLog);
-			Plan plan = new Plan(xmlFile);
-
-
-
+			#endregion
 			#region Parsing config file
+			Plan plan = new Plan(xmlFile);
 			XmlDoc = new XDocument();
 			try
 			{
@@ -150,38 +154,57 @@ namespace Job4ZIP
 				ShowError_Exit("", 2);
 			}
 			#endregion
-
 			Console.ForegroundColor = ConsoleColor.DarkGray;
 			Console.WriteLine(XmlDoc);
 			Console_ResetColor();
-
-			if (XmlDoc.Element("PLAN") == null)
+			#region Check presence of a minimum set of parameters
+            if (XmlDoc.Element("PLAN") == null)
 				ShowError_Exit("Root Tag PLAN not found in config file", 30);
 			//if (XmlDoc.Element("PLAN").Element("Timetable") == null)
 			//	ShowError_Exit("Tag Timetable not found in config file", 31);
-			if (XmlDoc.Element("PLAN").Element("ARH") == null)
+			if (XmlDoc.Element("PLAN").Element("ZIP") == null)
 				ShowError_Exit("Tag ARH not found in config file", 32);
 			if (XmlDoc.Element("PLAN").Element("SourcePath") == null)
-				ShowError_Exit("Tag SourcePath not found in config file", 33);	
-
+				ShowError_Exit("Tag SourcePath not found in config file", 33);
+			if (XmlDoc.Element("PLAN").Element("TargetPath") == null)
+				ShowError_Exit("Tag TargetPath not found in config file", 33);
+			if (XmlDoc.Element("PLAN").Element("ZIP").Element("EXE")== null)
+				ShowError_Exit("Tag EXE in ZIP node not found in config file", 34);
 			//XElement Timetable = XmlDoc.Element("PLAN").Element("Timetable");
 			//foreach (XElement Schedule in Timetable.Elements("Schedule"))
 			//{
 			//	doSchedule(Schedule);
 			//}
-
+			#endregion
+			#region Print Plan name
 			if (XmlDoc.Element("PLAN").HasAttributes)
 			{//				foreach (XAttribute att in XmlDoc.Element("PLAN").Attributes()) 					Console.WriteLine("{0}={1}", att.Name, att.Value);
 				if (XmlDoc.Element("PLAN").Attribute("name") != null)
 					ConsoleWriteLineField("Plan", "\"" + XmlDoc.Element("PLAN").Attribute("name").Value + "\"",true);
 			}
-			SourcePath = XmlDoc.Element("PLAN").Element("SourcePath").Value;
+            #endregion
+            #region Check Source path
+            SourcePath = XmlDoc.Element("PLAN").Element("SourcePath").Value;
             #if DEBUG
 			SourcePath = Path.GetDirectoryName(xmlFile) + "\\"+SourcePath; 
 			#endif
 			ConsoleWriteLineField("SourcePath", SourcePath, true);
 			if (!Directory.Exists(SourcePath)) ShowError_Exit("SourcePath \""+SourcePath+"\" not exist", 34);
-
+			//TODO: If source path is empty then rise warning
+			#endregion
+			#region Check Target path
+			TargetPath = XmlDoc.Element("PLAN").Element("TargetPath").Value;
+			#if DEBUG
+			TargetPath = Path.GetDirectoryName(xmlFile) + "\\" + TargetPath;
+			#endif
+			ConsoleWriteLineField("TargetPath", TargetPath, true);
+			if (!Directory.Exists(TargetPath)) ShowError_Exit("TargetPath \"" + TargetPath + "\" not exist", 34);
+			#endregion
+			#region Check ZIP
+			string ZIP_EXE = XmlDoc.Element("PLAN").Element("ZIP").Element("EXE").Value;
+			ConsoleWriteLineField("Zip", ZIP_EXE, true);
+			if (!File.Exists(ZIP_EXE)) ShowError_Exit("ZIP \"" + ZIP_EXE + "\" not exist", 34);
+			#endregion
 
 			Console.ResetColor();Console.ForegroundColor = ConsoleColor.White;
 
